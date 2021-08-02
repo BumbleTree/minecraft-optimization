@@ -1,5 +1,7 @@
 # Minecraft server optimization guide
 
+Originally Forked from https://github.com/YouHaveTrouble/minecraft-optimization
+
 Note for users that are on vanilla, fabric or spigot (or anything below paper) - go to your server.properties and change `sync-chunk-writes` to `false`. This option is force disabled on paper and its forks, but on server implementations before that you need to switch this off manually. This allows the server to save chunks off the main thread, lessening the load on the main tick loop.
 
 Guide for version 1.17. Some things may still apply on 1.15 - 1.16.
@@ -17,13 +19,14 @@ There will never be a guide that will give you perfect results. Each server has 
 Your choice of server software can make a huge difference in performance and api possibilities. There are currently multiple viable popular server jars, but there are also a few that you should stay away from for various reasons.
 
 Recommended top picks:
-* [Paper](https://github.com/PaperMC/Paper) - The most popular server software that aims to improve performance while fixing gameplay and mechanics inconsistencies.
-* [Tuinity](https://github.com/Spottedleaf/Tuinity) - Paper fork that includes even more high-performance patches.
-* [Purpur](https://github.com/pl3xgaming/Purpur) - Tuinity fork focused on features and the freedom of customization.
 * [Airplane](https://github.com/Technove/Airplane) - Tuinity fork that aims to further improve server performance.
+* [Purpur](https://github.com/pl3xgaming/Purpur) - Tuinity fork focused on features and the freedom of customization.
+* (Airplane offers a purpur fork with better performance than purpur but all the same features)
+* [Tuinity](https://github.com/Spottedleaf/Tuinity) - Paper fork that includes even more high-performance patches.
 
 You should stay away from:
 * Yatopia - "The combined power of Paper forks for maximum instability and unmaintainablity!" - [KennyTV's list of shame](https://github.com/KennyTV/list-of-shame). Nothing more to be said. (Moreover, the project has been discontinued.)
+* Sugarcane - Same philosohpy of yatopia yet even more inexperienced devs
 * Mohist - "Mohist is programmed to be malicious, game-breaking, and very unstable!" - [Reasons why you shouldn't use it](https://essentialsx.net/do-not-use-mohist.html)
 * Any paid server jar that claims async anything - 99.99% chance of being a scam.
 * Bukkit/Craftbukkit/Spigot - Extremely outdated in terms of performance compared to other server software you have access to.
@@ -35,6 +38,16 @@ Map pregeneration is one of the most important steps in improving a low-budget s
 It's key to remember that the overworld, nether and the end have separate world borders that need to be set up for each world. The nether dimension is 8x smaller than the overworld (if not modified with a datapack), so if you set the size wrong your players might end up outside of the world border!
 
 **Make sure to set up a vanilla world border (`/worldborder set [radius]`), as it limits certain functionalities such as lookup range for treasure maps that can cause lag spikes.**
+
+# Linux cpu scaling 
+
+Some hosts might ship machines running in "PowerSave" mode. This can result in nearly 25% lower clock speeds and thus vastly lower single threaded performance. This can lead to severly worse performance than setting the cpu scaling to performance mode.
+
+For Debian / ubuntu
+
+`Cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` Shows the cpus performance profile.
+
+`echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` Sets profile to performance.
 
 # Configurations
 
@@ -457,15 +470,6 @@ If this option is greater that `0`, players above the set y level will be damage
 
 Your garbage collector can be configured to reduce lag spikes caused by big garbage collector tasks. You can find startup flags optimized for minecraft servers [here](https://mcflags.emc.gs/) [`SOG`]. Keep in mind that this recommendation will not work on alternative jvm implementations.
 
-# Linux cpu scaling 
-
-Some hosts might ship machines running in "PowerSave" mode. This can result in nearly 25% lower clock speeds and thus vastly lower single threaded performance. This can lead to severly worse performance than setting the cpu scaling to performance mode.
-
-For Debian / ubuntu
-
-`Cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` Shows the cpus performance profile.
-
-`echo "performance" | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor` Sets profile to performance.
 # "Too good to be true" plugins
 
 ## Plugins removing ground items
@@ -493,6 +497,7 @@ timings:
 . . .
   enabled: false
   ```
+ To re-enable do `/Timings On`
   
 ## spark
 [Spark](https://github.com/lucko/spark) is a plugin that allows you to profile your servers CPU and memory usage. You can read on how to use it [on its wiki](https://spark.lucko.me/docs/). There's also a guide on how to find the cause of lag spikes [here](https://spark.lucko.me/docs/guides/Finding-lag-spikes).
